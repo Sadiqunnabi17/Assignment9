@@ -1,39 +1,24 @@
 "use client";
-import { createContext, useContext, useState, useEffect } from "react";
-import api from "@/api/axios";
+import { createContext, useContext } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const savedUser = localStorage.getItem("user");
-    if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    }
-    setLoading(false);
-  }, []);
-
-  const login = (userData, token) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData));
-    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    setUser(userData);
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    delete api.defaults.headers.common["Authorization"];
-    setUser(null);
+  const logout = async () => {
+    await signOut({ callbackUrl: "/" });
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        user: session?.user || null,
+        loading: status === "loading",
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

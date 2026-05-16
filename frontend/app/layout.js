@@ -1,3 +1,5 @@
+import { getServerSession } from "next-auth";
+import { SessionProvider } from "./SessionProvider";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
@@ -11,10 +13,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          <Toaster position="top-right" />
-          {children}
-        </AuthProvider>
+        <SessionProvider>
+          <AuthProvider>
+            <Toaster position="top-right" />
+            {children}
+          </AuthProvider>
+        </SessionProvider>
       </body>
     </html>
   );
